@@ -1,0 +1,50 @@
+
+# Run pre code checks
+# configure adhoc spitball env
+
+export SCRIPT_NAME=nmap_ping_scan.sh
+LOCAL_VARS="$(echo "$SCRIPT_NAME" | cut -f 1 -d '.')"
+
+if [ ! -e "$LOCAL_VARS" ] ; then
+cat <<-'END_TEXT' > "$LOCAL_VARS"
+#!/usr/bin/env bash
+THINGS_OF_INTEREST=${THINGS_OF_INTEREST:-}
+NETWORK1=${NETWORK1:-192.168.1-255}
+NETWORK2=${NETWORK2:-10.0.0.1-255}
+NETWORKS_OF_INTEREST=${NETWORKS_OF_INTEREST:-"$NETWORK1 $NETWORK2"}
+END_TEXT
+
+fi
+
+[ -r "$LOCAL_VARS" ] && [ ! -x "$LOCAL_VARS" ] && chmod u+x "$LOCAL_VARS"
+[ -x "$LOCAL_VARS" ] && source "$LOCAL_VARS"
+
+if [ "$DONT_INSTALL" != "DONT_INSTALL" ] ; then
+
+cat <<-'END_TEXT' > $SCRIPT_NAME
+#!/usr/bin/env bash
+export SCRIPT_NAME=nmap_ping_scan.sh
+LOCAL_VARS="$(echo "$SCRIPT_NAME" | cut -f 1 -d '.')"
+export SCRIPT_NAME=$SCRIPT_NAME
+export NMAP=nmap
+[ -x "$LOCAL_VARS" ] && source "$LOCAL_VARS"  
+THINGS_OF_INTEREST=${THINGS_OF_INTEREST:-""}
+NETWORK1=${NETWORK1:-192.168.0.1-255}
+NETWORK2=${NETWORK2:-10.0.0.1-255}
+NETWORKS_OF_INTEREST=${NETWORKS_OF_INTEREST:-"$NETWORK1 $NETWORK2"}
+echo "[*] " 1>&2
+echo "[*] $NETWORKS_OF_INTEREST" 1>&2
+read -p"$0: Enter to start command"
+$NMAP -n -sn -oG - $NETWORKS_OF_INTEREST
+END_TEXT
+
+else
+    echo "[*] mem resident not implemented"
+fi
+
+chmod -v u+x "$SCRIPT_NAME"
+echo "[*] Register: $LOCAL_VARS"
+echo "[*] Text:     $SCRIPT_NAME"
+clear && ./"$SCRIPT_NAME"
+
+# Run code reporting and logging
